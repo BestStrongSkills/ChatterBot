@@ -112,6 +112,7 @@ class SQLStorageAdapter(StorageAdapter):
 
         order_by = kwargs.pop('order_by', None)
         tags = kwargs.pop('tags', [])
+        kwargs.pop('exclude_text', None)
 
         # Convert a single sting into a list if only one tag is provided
         if type(tags) == str:

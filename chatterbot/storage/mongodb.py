@@ -23,8 +23,7 @@ class Query(object):
         if 'in_response_to' not in query:
             query['in_response_to'] = {}
 
-        if '$nin' not in query['in_response_to']:
-            query['in_response_to']['$nin'] = statements
+        query['in_response_to']['$nin'] = statements
 
         return Query(query)
 
@@ -103,25 +102,22 @@ class MongoDatabaseAdapter(StorageAdapter):
         """
         import pymongo
 
-        query = self.base_query
-
         order_by = kwargs.pop('order_by', None)
         tags = kwargs.pop('tags', [])
-
-        # Convert a single sting into a list if only one tag is provided
-        if type(tags) == str:
-            tags = [tags]
-
-        query = query.raw(kwargs)
+        exclude_text = kwargs.pop('exclude_text', None)
 
         if tags:
-            query = query.raw({
-                'tags': {
-                    '$in': tags
-                }
-            })
+            kwargs['tags'] = {
+                '$in': tags
+            }
 
-        matches = self.statements.find(query.value())
+        if exclude_text:
+            if 'text' not in kwargs:
+                # TODO: Handle a string parameter for text
+                kwargs['text'] = {}
+            kwargs['text']['$nin'] = exclude_text
+
+        matches = self.statements.find(kwargs)
 
         if order_by:
 
@@ -299,10 +295,9 @@ class MongoDatabaseAdapter(StorageAdapter):
                 }
             }
 
-            _statement_query.update(self.base_query.value())
             statement_query = self.statements.find(_statement_query)
 
-            for statement in list(statement_query):
+            for statement in statement_query:
                 yield self.mongo_to_object(statement)
 
     def drop(self):

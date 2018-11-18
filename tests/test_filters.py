@@ -22,21 +22,22 @@ class RepetitiveResponseFilterTestCase(ChatBotMongoTestCase):
         )
 
         self.trainer.train([
-            'Hi',
             'Hello',
             'Hi',
             'Hello',
             'Hi',
             'Hello',
             'How are you?',
-            'I am good.',
+            'I am good',
             'Glad to hear',
-            'How are you?'
+            'Thank you',
+            'I am good',
+            'Glad to hear',
         ])
 
         statement = Statement(text='Hello', conversation='training')
         first_response = self.chatbot.get_response(statement)
         second_response = self.chatbot.get_response(statement)
 
-        self.assertEqual('I am good.', first_response.text)
+        self.assertEqual('How are you?', first_response.text)
         self.assertEqual('Hi', second_response.text)
